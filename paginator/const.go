@@ -14,7 +14,7 @@ const DB = "exle"
 const EXLE_CARS = "cars"
 
 // sleep timers
-const NEXT_PAGE = 30
+const NEXT_PAGE = 10
 
 // const NEXT_PAGE_RAND = 5
 // const NEXT_CATEGORY = 30

@@ -1,13 +1,16 @@
 package main
 
 import (
+	"flag"
+
 	log "github.com/victron/simpleLogger"
 )
 
-// var wait_timer *int
+var user, password *string
 
 func init() {
-	// wait_timer = flag.Int("w", 30, "wait timer befors every request")
+	user = flag.String("u", "", "user name for authentication")
+	password = flag.String("p", "", "user password")
 	log.FlagsParse()
 
 	// flag.Parse()

@@ -1,6 +1,7 @@
 package paginator
 
 import (
+	"net/http"
 	"strings"
 	"time"
 
@@ -11,8 +12,7 @@ import (
 )
 
 // hook to star walk on search
-func SearchWalker() {
-	log.Debug.Println("in SearchWalker")
+func SearchWalker(cookies []*http.Cookie) {
 	// mClient := new(mongoClient)
 	// if err := (*mClient).Connect(MONGO_LOCAL); err != nil {
 	// 	log.Error.Fatal(err)
@@ -27,7 +27,7 @@ func SearchWalker() {
 	searchCl := colly.NewCollector(
 		colly.AllowedDomains(ALLOWED_DOMAINS...),
 		colly.UserAgent(USER_AGENT),
-		colly.CacheDir(CACHE_DIR),
+		// colly.CacheDir(CACHE_DIR), // don't forget, this will not use delay :))))
 		colly.IgnoreRobotsTxt(),
 		// //colly.MaxDepth(2),
 		// colly.Async(false), // some problem, not doing requests
@@ -39,9 +39,9 @@ func SearchWalker() {
 		// Filter domains affected by this rule
 		DomainGlob: "*",
 		// Set a delay between requests to these domains
-		Delay: NEXT_PAGE * time.Second,
+		Delay: time.Duration(*wait_timer) * time.Second,
 		// Add an additional random delay
-		RandomDelay: NEXT_PAGE * time.Second,
+		RandomDelay: time.Duration(*wait_timer) * time.Second,
 		Parallelism: 1,
 	})
 
@@ -55,8 +55,7 @@ func SearchWalker() {
 	// searchCl.OnResponse(func(res *colly.Response) {
 	// 	log.Debug.Println("URL res.Request.URL=", fmt.Sprintf("%+v", res.Request.URL))
 	// 	log.Debug.Println("URL res.StatusCode=", res.StatusCode)
-	// 	log.Debug.Println("URL res.StatusCode=", res.Body)
-	// 	// log.Debug.Println("URL from qtx=", res.Request.Ctx.Get("origURL"))
+	// 	// log.Debug.Println("URL res.Headers=", res.Headers)
 	// })
 
 	searchCl.OnHTML("a.pagination-next[href]", func(e *colly.HTMLElement) {
@@ -72,6 +71,7 @@ func SearchWalker() {
 		e.ForEach(`a[href]`, func(_ int, e *colly.HTMLElement) {
 			foundURL := e.Request.AbsoluteURL(e.Attr("href"))
 			if strings.HasPrefix(foundURL, DETAILS_PREFIX) {
+				log.Debug.Println("details foundURL=", foundURL)
 				car := new(Car)
 				var err error
 				(*car).Meta.Url = foundURL
@@ -90,7 +90,7 @@ func SearchWalker() {
 			}
 		})
 	})
-
+	searchCl.SetCookies(START_URL, cookies)
 	if err := q.AddURL(START_URL); err != nil {
 		log.Error.Fatalln(err)
 	}
