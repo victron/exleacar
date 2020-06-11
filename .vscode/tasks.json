@@ -1,0 +1,93 @@
+{
+    "version": "2.0.0",
+    "echoCommand": true,
+    "type": "shell",
+    "presentation": {
+        "showReuseMessage": false,
+    },
+    "inputs": [
+        {
+          "type": "pickString",
+          "id": "package",
+          "description": "What package of component to build?",
+          "options": [
+            ".",
+            "archive",
+          ],
+          "default": "."
+        },
+    ],
+
+    "tasks": [
+        {   "label": "build",
+            "presentation": {
+                "showReuseMessage": true
+            },
+            // "command": "cd",
+            "command": "echo",
+            "args": [ "./${input:package}", "&&", "go", "build"
+            ],
+            "problemMatcher": [
+                "$go"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {   "label": "copy to aws",
+            "command": "scp",
+            "args": [
+                "./${input:package}/${workspaceFolderBasename}",
+                "aws:~/${input:package}/"
+            ],
+        },
+        {
+            "label": "deploy",
+            "presentation": {
+                "echo": false
+            },
+            "command": "echo",
+            "args": [
+                "============= file:",
+                "${input:package}",
+                " on server ==============="
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build",
+                "copy to aws"
+            ],
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        { // not used
+            "label": "deploy and run",
+            "presentation": {
+                "echo": false
+            },
+            "command": "ssh",
+            "args": [
+                "-t", "aws", "./postParser", "-vvv", 
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "deploy",
+            ],
+            "problemMatcher": [
+                "$go"
+            ]
+        }
+    ]
+}
+
+
