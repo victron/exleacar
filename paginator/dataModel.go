@@ -14,12 +14,12 @@ import (
 )
 
 type Car struct {
+	Id   int  `bson:"_id"`
 	Meta Meta `bson:"meta"`
 	Data Data `bson:"data"`
 }
 
 type Meta struct {
-	Id      int       `bson:"_id"`
 	Url     string    `bson:"url"`
 	Mdate   time.Time `bson:"mdate"` // metadata adding time
 	Fdate   time.Time `bson:"fdate"` // fetched info about car time
@@ -35,7 +35,7 @@ func (car *Car) SaveId(mclient *mongoClient) error {
 	db := (*mclient).client.Database(DB)
 	coll := db.Collection(EXLE_CARS)
 	var findResult *Car
-	err := coll.FindOne(context.TODO(), bson.M{"_id": (*car).Meta.Id}).Decode(findResult)
+	err := coll.FindOne(context.TODO(), bson.M{"_id": (*car).Id}).Decode(findResult)
 	if err == mongo.ErrNoDocuments {
 		_, err = coll.InsertOne(context.TODO(), car)
 		if err != nil {
@@ -49,7 +49,7 @@ func (car *Car) SaveId(mclient *mongoClient) error {
 	}
 	if (*findResult).Meta.Fetched {
 		// change flag for new fetched, may be new data present
-		filter := bson.M{"_id": (*car).Meta.Id}
+		filter := bson.M{"_id": (*car).Id}
 		update := bson.M{"$set": bson.M{"meta.fetched": false}}
 		_, err := coll.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
@@ -59,18 +59,21 @@ func (car *Car) SaveId(mclient *mongoClient) error {
 	return errors.New("unknown error")
 }
 
-// parse Id from url
-func ParseId(carUrl string) (int, error) {
-	u, err := url.Parse(carUrl)
+// cleaning url from query,
+// seting id
+func (car *Car) ParseUrl() error {
+	u, err := url.Parse((*car).Meta.Url)
 	if err != nil {
 		log.Error.Fatal(err)
-		return 0, err
+		return err
 	}
+
+	(*car).Meta.Url = u.Path
+
 	path := strings.Split(u.Path, "/")
-	if id, err := strconv.Atoi(path[len(path)-1]); err != nil {
+	if (*car).Id, err = strconv.Atoi(path[len(path)-1]); err != nil {
 		log.Error.Fatal(err)
-		return 0, err
-	} else {
-		return id, nil
+		return err
 	}
+	return nil
 }

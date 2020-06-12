@@ -13,11 +13,11 @@ import (
 
 // hook to star walk on search
 func SearchWalker(cookies []*http.Cookie) {
-	// mClient := new(mongoClient)
-	// if err := (*mClient).Connect(MONGO_LOCAL); err != nil {
-	// 	log.Error.Fatal(err)
-	// }
-	// defer (*mClient).Close()
+	mClient := new(mongoClient)
+	if err := (*mClient).Connect(MONGO_LOCAL); err != nil {
+		log.Error.Fatal(err)
+	}
+	defer (*mClient).Close()
 
 	q, _ := queue.New(
 		1, // Number of consumer threads
@@ -75,14 +75,14 @@ func SearchWalker(cookies []*http.Cookie) {
 				car := new(Car)
 				var err error
 				(*car).Meta.Url = foundURL
-				if (*car).Meta.Id, err = ParseId(foundURL); err != nil {
+				if (*car).ParseUrl() != nil {
 					log.Error.Fatal(err)
 				}
 				(*car).Meta.Mdate = time.Now()
 				// ProductCollect(productCollector, foundURL)
-				// if err := (*car).SaveId(mClient); err != nil {
-				// 	log.Error.Fatalln(err)
-				// }
+				if err := (*car).SaveId(mClient); err != nil {
+					log.Error.Fatalln(err)
+				}
 				// TODO: add to queue
 				// if err := q.AddURL(foundURL); err != nil {
 				// 	log.Error.Fatalln(err)
