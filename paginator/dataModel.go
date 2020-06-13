@@ -52,7 +52,7 @@ func (car *Car) IdPresent(mclient *mongoClient, insert bool) bool {
 	findResult := Car{}
 	err := coll.FindOne(context.TODO(), bson.M{"_id": (*car).Id}).Decode(&findResult)
 	if err == mongo.ErrNoDocuments {
-		log.Debug.Println("doc with id=", (*car).Id, "missing")
+		log.Debug.Println("no doc with id=", (*car).Id, "in DB")
 		if insert == true {
 			_, err = coll.InsertOne(context.TODO(), car)
 			if err != nil {

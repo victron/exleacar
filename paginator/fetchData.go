@@ -44,9 +44,20 @@ func (car *Car) FetchData(cookies []*http.Cookie) error {
 		}
 
 	}
+	// TODO: check if report present, if not download photos
+	// compress dir
+	archName, err := fetch.Compress(dir)
+	if err != nil {
+		return err
+	} else {
+		if err := os.RemoveAll(dir); err != nil {
+			return nil
+		}
+
+	}
 	// update meta data
 	(*car).Meta.Fdate = time.Now()
-	(*car).Meta.Dir = dir
+	(*car).Meta.Dir = archName
 	(*car).Meta.Fetched = true
 	time.Sleep(3 * time.Second)
 	return nil

@@ -41,6 +41,7 @@ func main() {
 
 	paginator.SearchWalker(cookies, Cl)
 
+	// test for details
 	// details.GetDetails("https://www.exleasingcar.com/en/auto-details/6896925",
 	// 	cookies, Cl)
 	// details.GetDetails("https://www.exleasingcar.com/en/auto-details/6898242",

@@ -11,6 +11,7 @@ import (
 	log "github.com/victron/simpleLogger"
 )
 
+//
 func DownloadFile(filepath string, url string, cookies []*http.Cookie) error {
 
 	log.Debug.Println("fetching=", url)
