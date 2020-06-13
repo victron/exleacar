@@ -8,27 +8,26 @@ import (
 	"strings"
 	"time"
 
+	"github.com/victron/exleacar/details"
 	log "github.com/victron/simpleLogger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Car struct {
-	Id   int  `bson:"_id"`
-	Meta Meta `bson:"meta"`
-	Data Data `bson:"data"`
+	Id   int          `bson:"_id"`
+	Meta Meta         `bson:"meta"`
+	Data details.Data `bson:"data"`
 }
 
 type Meta struct {
 	Url     string    `bson:"url"`
 	Mdate   time.Time `bson:"mdate"` // metadata adding time
-	Fdate   time.Time `bson:"fdate"` // fetched info about car time
+	Ddate   time.Time `bson:"ddate"` // details info about car time
+	Fdate   time.Time `bson:"fdate"` // fetched damage report time
 	Fetched bool      `bson:"fetched"`
+	Dir     string    `bson:"dir"`     // dir or arch path with reports
 	Checked bool      `bson:"checked"` // means data checked (vin present)
-}
-
-type Data struct {
-	Vin string `bson:"vin"`
 }
 
 func (car *Car) SaveId(mclient *mongoClient) error {
@@ -67,10 +66,10 @@ func (car *Car) ParseUrl() error {
 		log.Error.Fatal(err)
 		return err
 	}
+	u.RawQuery = "" // remove all params
+	(*car).Meta.Url = u.String()
 
-	(*car).Meta.Url = u.Path
-
-	path := strings.Split(u.Path, "/")
+	path := strings.Split((*car).Meta.Url, "/")
 	if (*car).Id, err = strconv.Atoi(path[len(path)-1]); err != nil {
 		log.Error.Fatal(err)
 		return err

@@ -8,11 +8,13 @@ import (
 	colly "github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 
+	"github.com/victron/exleacar/details"
 	log "github.com/victron/simpleLogger"
 )
 
 // hook to star walk on search
-func SearchWalker(cookies []*http.Cookie) {
+func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
+	cl := collector.Clone()
 	mClient := new(mongoClient)
 	if err := (*mClient).Connect(MONGO_LOCAL); err != nil {
 		log.Error.Fatal(err)
@@ -24,28 +26,7 @@ func SearchWalker(cookies []*http.Cookie) {
 		&queue.InMemoryQueueStorage{MaxSize: 10000}, // Use default queue storage
 	)
 
-	searchCl := colly.NewCollector(
-		colly.AllowedDomains(ALLOWED_DOMAINS...),
-		colly.UserAgent(USER_AGENT),
-		// colly.CacheDir(CACHE_DIR), // don't forget, this will not use delay :))))
-		colly.IgnoreRobotsTxt(),
-		// //colly.MaxDepth(2),
-		// colly.Async(false), // some problem, not doing requests
-	)
-
-	// searchCl := commonCl.Clone()
-
-	searchCl.Limit(&colly.LimitRule{
-		// Filter domains affected by this rule
-		DomainGlob: "*",
-		// Set a delay between requests to these domains
-		Delay: time.Duration(*wait_timer) * time.Second,
-		// Add an additional random delay
-		RandomDelay: time.Duration(*wait_timer) * time.Second,
-		Parallelism: 1,
-	})
-
-	searchCl.OnRequest(func(r *colly.Request) {
+	cl.OnRequest(func(r *colly.Request) {
 		// r.Headers.Set("Host", HOST)
 		// r.Headers.Set("Cookie", COOKIE)
 		// r.Headers.Set("Cache-Control", "no-cache")
@@ -58,7 +39,7 @@ func SearchWalker(cookies []*http.Cookie) {
 	// 	// log.Debug.Println("URL res.Headers=", res.Headers)
 	// })
 
-	searchCl.OnHTML("a.pagination-next[href]", func(e *colly.HTMLElement) {
+	cl.OnHTML("a.pagination-next[href]", func(e *colly.HTMLElement) {
 		foundURL := e.Request.AbsoluteURL(e.Attr("href"))
 		log.Debug.Println("foundURL=", foundURL)
 		if err := q.AddURL(foundURL); err != nil {
@@ -66,7 +47,7 @@ func SearchWalker(cookies []*http.Cookie) {
 		}
 	})
 
-	searchCl.OnHTML(AUCTION_BLOCK, func(e *colly.HTMLElement) {
+	cl.OnHTML(AUCTION_BLOCK, func(e *colly.HTMLElement) {
 		log.Debug.Println("auction block found")
 		e.ForEach(`a[href]`, func(_ int, e *colly.HTMLElement) {
 			foundURL := e.Request.AbsoluteURL(e.Attr("href"))
@@ -79,23 +60,29 @@ func SearchWalker(cookies []*http.Cookie) {
 					log.Error.Fatal(err)
 				}
 				(*car).Meta.Mdate = time.Now()
-				// ProductCollect(productCollector, foundURL)
+
+				// get car details
+				// TODO: move to main packae this call (may be???)
+				(*car).Data, err = details.GetDetails((*car).Meta.Url, cookies, collector)
+				if err != nil {
+					log.Warning.Println("error for id=", (*car).Id, err)
+				}
+				if err := car.FetchData(cookies); err != nil {
+					log.Error.Println(err)
+				}
+
 				if err := (*car).SaveId(mClient); err != nil {
 					log.Error.Fatalln(err)
 				}
-				// TODO: add to queue
-				// if err := q.AddURL(foundURL); err != nil {
-				// 	log.Error.Fatalln(err)
-				// }
 			}
 		})
 	})
-	searchCl.SetCookies(START_URL, cookies)
+	cl.SetCookies(START_URL, cookies)
 	if err := q.AddURL(START_URL); err != nil {
 		log.Error.Fatalln(err)
 	}
 
-	if err := q.Run(searchCl); err != nil {
+	if err := q.Run(cl); err != nil {
 		log.Error.Fatalln(err)
 	}
 }
