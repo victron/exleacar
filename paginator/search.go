@@ -8,7 +8,7 @@ import (
 	colly "github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/queue"
 
-	"github.com/victron/exleacar/details"
+	"github.com/victron/exleacar/paginator/details"
 	log "github.com/victron/simpleLogger"
 )
 

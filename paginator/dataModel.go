@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/victron/exleacar/details"
+	"github.com/victron/exleacar/paginator/details"
 	log "github.com/victron/simpleLogger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

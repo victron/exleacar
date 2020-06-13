@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/victron/exleacar/fetch"
+	"github.com/victron/exleacar/paginator/fetch"
 	log "github.com/victron/simpleLogger"
 )
 
