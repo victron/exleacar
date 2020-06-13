@@ -2,7 +2,6 @@ package paginator
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 	"strings"
@@ -21,32 +20,52 @@ type Car struct {
 }
 
 type Meta struct {
-	Url     string    `bson:"url"`
-	Mdate   time.Time `bson:"mdate"` // metadata adding time
-	Ddate   time.Time `bson:"ddate"` // details info about car time
-	Fdate   time.Time `bson:"fdate"` // fetched damage report time
-	Fetched bool      `bson:"fetched"`
+	Url   string    `bson:"url"`
+	Mdate time.Time `bson:"mdate"` // metadata adding time
+	// TODO: add after details
+	Ddate   time.Time `bson:"ddate"`   // details info about car time
+	Fdate   time.Time `bson:"fdate"`   // fetched damage report time
+	Fetched bool      `bson:"fetched"` // means report fetched
 	Dir     string    `bson:"dir"`     // dir or arch path with reports
-	Checked bool      `bson:"checked"` // means data checked (vin present)
+	Checked bool      `bson:"checked"` // means vin present and data fetched
 }
 
-func (car *Car) SaveId(mclient *mongoClient) error {
+// inserting doc. no any checking if doc present
+func (car *Car) InsertFullDoc(mclient *mongoClient) error {
 	db := (*mclient).client.Database(DB)
 	coll := db.Collection(EXLE_CARS)
-	var findResult *Car
-	err := coll.FindOne(context.TODO(), bson.M{"_id": (*car).Id}).Decode(findResult)
+	_, err := coll.InsertOne(context.TODO(), car)
+	if err != nil {
+		log.Error.Fatalln(err)
+	}
+	return nil
+}
+
+// check if data for Id present. To avoid double collecting
+// if id not found adding doc to DB, at this moment only meta can present in doc, and return false
+// if flag `checked==true` all data exist - return true
+// if data fetched but not checked - set flag fetched to false for new fetching
+// insert: if true insert doc; needed for possible work in separate service. No need to insert if next spep is to collect details.
+func (car *Car) IdPresent(mclient *mongoClient, insert bool) bool {
+	db := (*mclient).client.Database(DB)
+	coll := db.Collection(EXLE_CARS)
+	findResult := Car{}
+	err := coll.FindOne(context.TODO(), bson.M{"_id": (*car).Id}).Decode(&findResult)
 	if err == mongo.ErrNoDocuments {
-		_, err = coll.InsertOne(context.TODO(), car)
-		if err != nil {
-			log.Error.Fatalln(err)
+		log.Debug.Println("doc with id=", (*car).Id, "missing")
+		if insert == true {
+			_, err = coll.InsertOne(context.TODO(), car)
+			if err != nil {
+				log.Error.Fatalln(err)
+			}
 		}
-		return nil
+		return false
 	}
 
-	if (*findResult).Meta.Checked {
-		return nil
+	if findResult.Meta.Checked == true {
+		return true
 	}
-	if (*findResult).Meta.Fetched {
+	if findResult.Meta.Fetched {
 		// change flag for new fetched, may be new data present
 		filter := bson.M{"_id": (*car).Id}
 		update := bson.M{"$set": bson.M{"meta.fetched": false}}
@@ -54,12 +73,14 @@ func (car *Car) SaveId(mclient *mongoClient) error {
 		if err != nil {
 			log.Error.Fatalln(err)
 		}
+		return false
 	}
-	return errors.New("unknown error")
+	return false
 }
 
 // cleaning url from query,
 // seting id
+// TODO: create test
 func (car *Car) ParseUrl() error {
 	u, err := url.Parse((*car).Meta.Url)
 	if err != nil {

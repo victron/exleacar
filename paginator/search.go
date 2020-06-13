@@ -61,19 +61,33 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 				}
 				(*car).Meta.Mdate = time.Now()
 
-				// get car details
-				// TODO: move to main packae this call (may be???)
-				(*car).Data, err = details.GetDetails((*car).Meta.Url, cookies, collector)
-				if err != nil {
-					log.Warning.Println("error for id=", (*car).Id, err)
-				}
-				if err := car.FetchData(cookies); err != nil {
-					log.Error.Println(err)
+				// TODO: make check if it already in db
+				if !(*car).IdPresent(mClient, false) {
+					// TODO: move to main packae this call (may be???)
+					// get car details
+					(*car).Data, err = details.GetDetails((*car).Meta.Url, cookies, collector)
+					if err != nil {
+						log.Warning.Println("error for id=", (*car).Id, err)
+					}
+					(*car).Meta.Ddate = time.Now()
+
+					// fentching
+					if err := car.FetchData(cookies); err != nil {
+						log.Error.Println(err)
+					}
+
+					// details recieved
+					// reports fetched
+					// vin present
+					if ((*car).Meta.Ddate != time.Time{}) && (*car).Meta.Fetched && (*car).Data.Vin != "" {
+						(*car).Meta.Checked = true
+					}
+
+					if err := (*car).InsertFullDoc(mClient); err != nil {
+						log.Error.Fatalln(err)
+					}
 				}
 
-				if err := (*car).SaveId(mClient); err != nil {
-					log.Error.Fatalln(err)
-				}
 			}
 		})
 	})

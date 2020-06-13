@@ -2,23 +2,22 @@ package details
 
 import (
 	"errors"
-
-	log "github.com/victron/simpleLogger"
 )
 
 type Data struct {
 	Vin           string
 	Photos        []string
 	Specification [][]string
-	DamageRaw     [][]LinkDescription
 	Damage        []LinkDescription
 	SupplierInfo  [][]string
+	RawData       struct {
+		Damage [][]string
+	}
 }
 
 type LinkDescription struct {
-	Name     string
-	Link     string
-	Original string
+	Name string
+	Link string
 }
 
 // get vin
@@ -34,21 +33,4 @@ func (data *Data) GetVin() (string, error) {
 		}
 	}
 	return "", errors.New("VIN not found")
-}
-
-func (data *Data) FilterDamage() error {
-	damage := make([]LinkDescription, 0)
-	var err error
-	for n, row := range (*data).DamageRaw {
-		if len(row) != 2 {
-			log.Warning.Println("wrong len for row=", n)
-			err = errors.New("wrong len in row")
-			continue
-		}
-		if row[0].Link == row[1].Link {
-			damage = append(damage, row[0])
-		}
-	}
-	(*data).Damage = damage
-	return err
 }

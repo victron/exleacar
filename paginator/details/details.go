@@ -64,17 +64,24 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 
 	cl.OnHTML("div.damage-block table", func(e *colly.HTMLElement) {
 		log.Debug.Println("\"div.damage-block table\" found")
-		table := make([][]LinkDescription, 0)
+		table := make([][]LinkDescription, 0, 3)
+		tableText := make([][]string, 0, 3)
 		e.ForEach("tr", func(_ int, e *colly.HTMLElement) {
 			var row []LinkDescription
+			var rawText []string
 			e.ForEach("td", func(_ int, e *colly.HTMLElement) {
 				linkD := LinkDescription{}
 
-				linkD.Name = e.Text
+				// TODO: check, how to save raw text
+				text := ""
+				if err := e.Unmarshal(text); err != nil {
+					log.Error.Println(err)
+				}
+				rawText = append(rawText, text)
 
-				linkD.Original = e.Attr("onclick")
+				linkD.Name = e.Text
 				var err error
-				if linkD.Link, err = FindLink(linkD.Original); err != nil {
+				if linkD.Link, err = FindLink(e.Attr("onclick")); err != nil {
 					log.Warning.Println("link not found")
 				}
 				row = append(row, linkD)
@@ -82,7 +89,11 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 			table = append(table, row)
 		})
 		log.Debug.Println("damage-block table=", table)
-		(*data).DamageRaw = table
+		var err error
+		if (*data).Damage, err = FilterDamage(table); err != nil {
+			log.Warning.Println(err)
+		}
+		(*data).RawData.Damage = tableText
 	})
 
 	cl.OnHTML("div.photo-block", func(e *colly.HTMLElement) {
@@ -111,11 +122,6 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 	var err error
 	if (*data).Vin, err = data.GetVin(); err != nil {
 		log.Warning.Println(err)
-	}
-
-	if data.FilterDamage() == nil {
-		// some cleaning
-		(*data).DamageRaw = [][]LinkDescription{}
 	}
 
 	log.Debug.Println("data=", *data)
