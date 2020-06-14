@@ -81,7 +81,8 @@ func RenameFile(fileName string) (string, error) {
 	contentType := http.DetectContentType(buffer)
 	fileEndings, err := mime.ExtensionsByType(contentType)
 	if err != nil {
-		log.Error.Println("file detection problem=", err)
+		log.Error.Println("file detection problem=", err, "removing unknown file=", fileName)
+		os.Remove(fileName)
 		return fileName, err
 	}
 	log.Debug.Println("fileType=", fileEndings[0])
