@@ -74,6 +74,7 @@ func RenameFile(fileName string) (string, error) {
 	buffer := make([]byte, 512)
 	_, err = f.Read(buffer)
 	if err != nil {
+		f.Close()
 		return fileName, err
 	}
 	f.Close()
@@ -87,6 +88,12 @@ func RenameFile(fileName string) (string, error) {
 	}
 	log.Debug.Println("fileType=", fileEndings[0])
 	newName := fileName + fileEndings[0]
+
+	_, err = os.Stat(newName)
+	if !os.IsNotExist(err) {
+		log.Warning.Println("file already exists=", newName)
+		return newName, errors.New("file already exists")
+	}
 
 	if err := os.Rename(fileName, newName); err != nil {
 		log.Error.Println(err)
