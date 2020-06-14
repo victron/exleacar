@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"crypto/tls"
 	"errors"
 	"io"
 	"mime"
@@ -16,8 +17,14 @@ func DownloadFile(filepath string, url string, cookies []*http.Cookie) error {
 
 	log.Debug.Println("fetching=", url)
 	log.Debug.Println("saving=", filepath)
+
 	client := &http.Client{
 		Timeout: time.Minute,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -32,6 +39,7 @@ func DownloadFile(filepath string, url string, cookies []*http.Cookie) error {
 	res, err := client.Do(req)
 	if err != nil {
 		log.Error.Println(err)
+		return err
 	}
 	defer res.Body.Close()
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
