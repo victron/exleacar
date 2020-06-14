@@ -58,7 +58,7 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 			})
 			table = append(table, row)
 		})
-		log.Debug.Println("supplier-info table=", table)
+		// log.Debug.Println("supplier-info table=", table)
 		(*data).SupplierInfo = table
 	})
 
@@ -112,7 +112,7 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 				photos = append(photos, link)
 			})
 		})
-		log.Debug.Println("photos=", photos)
+		// log.Debug.Println("photos=", photos)
 		(*data).Photos = photos
 	})
 
@@ -124,6 +124,6 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 		log.Warning.Println(err)
 	}
 
-	log.Debug.Println("data=", *data)
+	// log.Debug.Println("data=", *data)
 	return *data, nil
 }

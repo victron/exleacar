@@ -44,7 +44,6 @@ func (car *Car) FetchData(cookies []*http.Cookie) error {
 	(*car).Meta.Fdate = time.Now()
 	(*car).Meta.Dir = archName
 	(*car).Meta.Fetched = true
-	time.Sleep(3 * time.Second)
 	return nil
 }
 
@@ -91,6 +90,11 @@ func (car *Car) FetchPhotos(dir string, cookies []*http.Cookie) error {
 			log.Error.Println("renaming err=", err)
 		}
 
+		if n > MAX_PHOTOS_NUMBER {
+			break
+		}
+
+		time.Sleep(3 * time.Second)
 	}
 	return nil
 }

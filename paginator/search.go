@@ -76,12 +76,14 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 						log.Error.Println(err)
 					}
 
+					// TODO: change logic later; when details should be update second time
 					// details recieved
 					// reports fetched
 					// vin present
-					if ((*car).Meta.Ddate != time.Time{}) && (*car).Meta.Fetched && (*car).Data.Vin != "" {
-						(*car).Meta.Checked = true
-					}
+					// if ((*car).Meta.Ddate != time.Time{}) && (*car).Meta.Fetched && (*car).Data.Vin != "" {
+					// 	(*car).Meta.Checked = true
+					// }
+					(*car).Meta.Checked = true
 
 					if err := (*car).InsertFullDoc(mClient); err != nil {
 						log.Error.Fatalln(err)

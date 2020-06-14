@@ -8,6 +8,7 @@ const START_URL = "https://www.exleasingcar.com/en/auto-auction/order-9/"
 const USER_AGENT = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36`
 const CACHE_DIR = ".colly_cache2"
 const DATA_DIR = "/home/vic/exle"
+const MAX_PHOTOS_NUMBER = 30 // save no more then n photos
 
 // mongo consts
 const MONGO_LOCAL = "mongodb://localhost:27017"
