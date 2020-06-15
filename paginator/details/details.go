@@ -68,16 +68,8 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 		tableText := make([][]string, 0, 3)
 		e.ForEach("tr", func(_ int, e *colly.HTMLElement) {
 			var row []LinkDescription
-			var rawText []string
 			e.ForEach("td", func(_ int, e *colly.HTMLElement) {
 				linkD := LinkDescription{}
-
-				// TODO: check, how to save raw text
-				text := ""
-				if err := e.Unmarshal(text); err != nil {
-					log.Error.Println(err)
-				}
-				rawText = append(rawText, text)
 
 				linkD.Name = e.Text
 				var err error
