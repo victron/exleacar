@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"errors"
 	"io"
 	"os"
@@ -37,14 +38,18 @@ func Compress(dirName string) (string, error) {
 	}
 
 	gzFileName := dirName + ".tgz"
-	tarfile, err := os.Create(gzFileName)
+	tgzfile, err := os.Create(gzFileName)
 	if err != nil {
 		return "", err
 	}
-	defer tarfile.Close()
+	defer tgzfile.Close()
 
-	var fileWriter io.WriteCloser = tarfile
-	tarfileWriter := tar.NewWriter(fileWriter)
+	var fileWriter io.WriteCloser = tgzfile
+	archiver := gzip.NewWriter(fileWriter)
+	archiver.Name = gzFileName
+	defer archiver.Close()
+
+	tarfileWriter := tar.NewWriter(archiver)
 	defer tarfileWriter.Close()
 
 	for _, fileInfo := range files {

@@ -24,10 +24,13 @@ func (car *Car) FetchData(cookies []*http.Cookie) error {
 		return err
 	}
 
-	// TODO: check if report present, if not download photos
-	// fetching photos
-	if err := car.FetchPhotos(dir, cookies); err != nil {
-		return err
+	// check if report present, if not download photos
+	if n, _ := fetch.IsFilePresent(".pdf", dir); n == 0 {
+		log.Info.Println("no PDF report, getting images")
+		// fetching photos
+		if err := car.FetchPhotos(dir, cookies); err != nil {
+			return err
+		}
 	}
 
 	// compress dir
