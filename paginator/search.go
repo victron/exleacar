@@ -1,7 +1,9 @@
 package paginator
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,12 +32,14 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 		// r.Headers.Set("Host", HOST)
 		// r.Headers.Set("Cookie", COOKIE)
 		// r.Headers.Set("Cache-Control", "no-cache")
+		// r.Ctx.Put("OnRequest", fmt.Sprintf("%v", r.URL))
 		log.Info.Println("Visiting URL=:", r.URL)
 	})
 
-	// searchCl.OnResponse(func(res *colly.Response) {
+	// cl.OnResponse(func(res *colly.Response) {
 	// 	log.Debug.Println("URL res.Request.URL=", fmt.Sprintf("%+v", res.Request.URL))
 	// 	log.Debug.Println("URL res.StatusCode=", res.StatusCode)
+	// 	res.Ctx.Put("OnResponse", fmt.Sprintf("%v", res.Request.URL))
 	// 	// log.Debug.Println("URL res.Headers=", res.Headers)
 	// })
 
@@ -49,10 +53,12 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 
 	cl.OnHTML(AUCTION_BLOCK, func(e *colly.HTMLElement) {
 		log.Debug.Println("auction block found")
+		count := 0
 		e.ForEach(`a[href]`, func(_ int, e *colly.HTMLElement) {
 			foundURL := e.Request.AbsoluteURL(e.Attr("href"))
 			if strings.HasPrefix(foundURL, DETAILS_PREFIX) {
 				log.Debug.Println("details foundURL=", foundURL)
+				count++
 				car := new(Car)
 				var err error
 				(*car).Meta.Url = foundURL
@@ -65,7 +71,9 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 				if !(*car).IdPresent(mClient, false) {
 					// TODO: move to main packae this call (may be???)
 					// get car details
-					(*car).Data, err = details.GetDetails((*car).Meta.Url, cookies, collector)
+					e.Response.Ctx.Put("searchUrl", fmt.Sprintf("%v", e.Request.URL))
+					e.Response.Ctx.Put("count", strconv.Itoa(count))
+					(*car).Data, err = details.GetDetails((*car).Meta.Url, e.Response.Ctx, cookies, collector)
 					if err != nil {
 						log.Warning.Println("error for id=", (*car).Id, err)
 					}

@@ -9,7 +9,7 @@ import (
 )
 
 // hook to star walk on search
-func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector) (Data, error) {
+func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collector *colly.Collector) (Data, error) {
 	data := new(Data)
 
 	cl := collector.Clone()
@@ -19,6 +19,8 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 		// r.Headers.Set("Cookie", COOKIE)
 		// r.Headers.Set("Cache-Control", "no-cache")
 		log.Info.Println("Visiting URL=:", r.URL)
+		log.Info.Println("serarch URL=", r.Ctx.Get("searchUrl"))
+		log.Info.Println("details on search page count=", r.Ctx.Get("count"))
 	})
 
 	cl.OnResponse(func(res *colly.Response) {
@@ -109,7 +111,8 @@ func GetDetails(link string, cookies []*http.Cookie, collector *colly.Collector)
 	})
 
 	cl.SetCookies(link, cookies)
-	cl.Visit(link)
+	// cl.Visit(link)
+	cl.Request("GET", link, nil, ctx, nil)
 
 	var err error
 	if (*data).Vin, err = data.GetVin(); err != nil {
