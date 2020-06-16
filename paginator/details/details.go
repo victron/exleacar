@@ -76,7 +76,7 @@ func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collect
 				linkD.Name = e.Text
 				var err error
 				if linkD.Link, err = FindLink(e.Attr("onclick")); err != nil {
-					log.Warning.Println("link not found")
+					log.Debug.Println("link not found")
 				}
 				row = append(row, linkD)
 			})

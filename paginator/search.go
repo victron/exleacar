@@ -43,11 +43,28 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 	// 	// log.Debug.Println("URL res.Headers=", res.Headers)
 	// })
 
-	cl.OnHTML("a.pagination-next[href]", func(e *colly.HTMLElement) {
-		foundURL := e.Request.AbsoluteURL(e.Attr("href"))
-		log.Debug.Println("foundURL=", foundURL)
-		if err := q.AddURL(foundURL); err != nil {
-			log.Error.Fatalln(err)
+	// cl.OnHTML("a.pagination-next[href]", func(e *colly.HTMLElement) {
+	cl.OnHTML("div.pagination-block", func(e *colly.HTMLElement) {
+		log.Debug.Println("found=", "div.pagination-block")
+		foundURL := e.ChildAttr(`a.pagination-next`, "href")
+
+		// normal walk on pages
+		if foundURL != "" {
+			foundURL = e.Request.AbsoluteURL(foundURL)
+			log.Debug.Println("foundURL=", foundURL)
+			if err := q.AddURL(foundURL); err != nil {
+				log.Error.Fatalln(err)
+			}
+			return
+		}
+
+		// addiing to queue search on all
+		if foundURL == "" && strings.HasPrefix(e.Request.URL.String(), CUSTOM_SEARCH_URL) {
+			log.Info.Println("adding ALL_SEARCH_URL to queue")
+			cl.SetCookies(ALL_SEARCH_URL, cookies)
+			if err := q.AddURL(ALL_SEARCH_URL); err != nil {
+				log.Error.Fatalln(err)
+			}
 		}
 	})
 
@@ -101,8 +118,8 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 			}
 		})
 	})
-	cl.SetCookies(START_URL, cookies)
-	if err := q.AddURL(START_URL); err != nil {
+	cl.SetCookies(CUSTOM_SEARCH_URL, cookies)
+	if err := q.AddURL(CUSTOM_SEARCH_URL); err != nil {
 		log.Error.Fatalln(err)
 	}
 

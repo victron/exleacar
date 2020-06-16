@@ -4,7 +4,8 @@ var ALLOWED_DOMAINS = []string{"www.exleasingcar.com", "exleasingcar.com"}
 
 const HOST = "exleasingcar.com"
 const DETAILS_PREFIX = "https://www.exleasingcar.com/en/auto-details/"
-const START_URL = "https://www.exleasingcar.com/en/auto-auction/order-9/"
+const ALL_SEARCH_URL = "https://www.exleasingcar.com/en/auto-auction/order-9/"
+const CUSTOM_SEARCH_URL = `https://www.exleasingcar.com/en/auto-auction/nissan-Qashqai/ssangyong/suzuki-SX4/manual/manufacture-year-2015-`
 const USER_AGENT = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36`
 const CACHE_DIR = ".colly_cache2"
 const DATA_DIR = "/home/vic/exle"
