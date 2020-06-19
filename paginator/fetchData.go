@@ -14,7 +14,7 @@ import (
 // colecting reports and photos
 func (car *Car) FetchData(cookies []*http.Cookie, photoNum int) error {
 	date := time.Now().Format("2006-01-02")
-	dir := filepath.Join(DATA_DIR, date, strconv.Itoa((*car).Id))
+	dir := filepath.Join(*DATA_DIR, date, strconv.Itoa((*car).Id))
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Error.Fatal(err, "can't create dir=", dir)
 	}

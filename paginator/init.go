@@ -1,8 +1,9 @@
 package paginator
 
-// var wait_timer *int
+import "flag"
+
+var DATA_DIR *string
 
 func init() {
-	// wait_timer = flag.Int("w", 30, "wait timer befors every request")
-	// flag.Parse()
+	DATA_DIR = flag.String("dir", "", "path to store reports and photos")
 }

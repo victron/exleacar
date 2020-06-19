@@ -10,8 +10,8 @@ import (
 )
 
 func main() {
-	if *user == "" || *password == "" {
-		log.Error.Fatal("user name and password mandatory")
+	if *user == "" || *password == "" || *paginator.DATA_DIR == "" {
+		log.Error.Fatal("user name, password, dir mandatory")
 		return
 	}
 	cookies, err := auth.RecieveCookies("https://www.exleasingcar.com/en",
