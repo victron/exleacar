@@ -6,6 +6,8 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/victron/exleacar/auth"
 	"github.com/victron/exleacar/paginator"
+
+	// "github.com/victron/exleacar/paginator/details"
 	log "github.com/victron/simpleLogger"
 )
 
@@ -42,8 +44,9 @@ func main() {
 	paginator.SearchWalker(cookies, Cl)
 
 	// test for details
-	// details.GetDetails("https://www.exleasingcar.com/en/auto-details/6896925",
-	// 	cookies, Cl)
+	// ctx := colly.NewContext()
+	// details.GetDetails("https://www.exleasingcar.com/en/auto-details/6909906",
+	// 	ctx, cookies, Cl)
 	// details.GetDetails("https://www.exleasingcar.com/en/auto-details/6898242",
 	// 	cookies, Cl)
 }

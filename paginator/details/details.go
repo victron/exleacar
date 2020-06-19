@@ -11,6 +11,7 @@ import (
 // hook to star walk on search
 func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collector *colly.Collector) (Data, error) {
 	data := new(Data)
+	(*data).Condition = "NONE"
 
 	cl := collector.Clone()
 
@@ -31,7 +32,7 @@ func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collect
 
 	// conditions state
 	cl.OnHTML("div.tipas-2", func(e *colly.HTMLElement) {
-		(*data).Condition = e.ChildText("")
+		(*data).Condition = e.ChildText("span")
 	})
 
 	cl.OnHTML("div.auto-specification table", func(e *colly.HTMLElement) {
@@ -67,6 +68,17 @@ func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collect
 		})
 		// log.Debug.Println("supplier-info table=", table)
 		(*data).SupplierInfo = table
+	})
+
+	cl.OnHTML("div.damage-block", func(e *colly.HTMLElement) {
+		log.Debug.Println("\"div.damage-block\" found")
+		if e.ChildText("h4") == "Comments and Notes" {
+			text := []string{}
+			e.ForEach("p", func(_ int, e *colly.HTMLElement) {
+				text = append(text, e.Text)
+			})
+			(*data).Comments = text
+		}
 	})
 
 	cl.OnHTML("div.damage-block table", func(e *colly.HTMLElement) {
@@ -124,6 +136,6 @@ func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collect
 		log.Warning.Println(err)
 	}
 
-	// log.Debug.Println("data=", *data)
+	log.Debug.Printf("data=%+v", *data)
 	return *data, nil
 }
