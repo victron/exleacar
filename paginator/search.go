@@ -96,8 +96,15 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 					}
 					(*car).Meta.Ddate = time.Now()
 
+					// if custom url takes more photos and even report present
+					var photoNum = 0
+					if strings.HasPrefix(e.Response.Ctx.Get("searchUrl"), CUSTOM_SEARCH_URL) {
+						photoNum = 40
+						log.Info.Println("gettting more photos=", photoNum)
+					}
+
 					// fentching
-					if err := car.FetchData(cookies); err != nil {
+					if err := car.FetchData(cookies, photoNum); err != nil {
 						log.Error.Println(err)
 					}
 

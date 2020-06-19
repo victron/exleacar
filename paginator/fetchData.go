@@ -12,7 +12,7 @@ import (
 )
 
 // colecting reports and photos
-func (car *Car) FetchData(cookies []*http.Cookie) error {
+func (car *Car) FetchData(cookies []*http.Cookie, photoNum int) error {
 	date := time.Now().Format("2006-01-02")
 	dir := filepath.Join(DATA_DIR, date, strconv.Itoa((*car).Id))
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -25,10 +25,10 @@ func (car *Car) FetchData(cookies []*http.Cookie) error {
 	}
 
 	// check if report present, if not download photos
-	if n, _ := fetch.IsFilePresent(".pdf", dir); n == 0 {
-		log.Info.Println("no PDF report, getting images")
+	if n, _ := fetch.IsFilePresent(".pdf", dir); n == 0 || photoNum > 0 {
+		log.Info.Println("getting images")
 		// fetching photos
-		if err := car.FetchPhotos(dir, cookies); err != nil {
+		if err := car.FetchPhotos(dir, cookies, photoNum); err != nil {
 			return err
 		}
 	}
@@ -81,7 +81,8 @@ func (car *Car) FetchReports(dir string, cookies []*http.Cookie) error {
 }
 
 // fetching photos
-func (car *Car) FetchPhotos(dir string, cookies []*http.Cookie) error {
+// number of photos not less then  MAX_PHOTOS_NUMBER and photoNum
+func (car *Car) FetchPhotos(dir string, cookies []*http.Cookie, photoNum int) error {
 	for n, photoLink := range (*car).Data.Photos {
 		fileName := filepath.Join(dir, strconv.Itoa(n)+"_photo")
 
@@ -93,7 +94,7 @@ func (car *Car) FetchPhotos(dir string, cookies []*http.Cookie) error {
 			log.Error.Println("renaming err=", err)
 		}
 
-		if n > MAX_PHOTOS_NUMBER {
+		if n > MAX_PHOTOS_NUMBER && n > photoNum {
 			break
 		}
 
