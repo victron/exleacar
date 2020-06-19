@@ -6,8 +6,10 @@ import (
 
 type Data struct {
 	Vin           string
+	Condition     string
 	Photos        []string
 	Specification [][]string
+	Comments      []string
 	Damage        []LinkDescription
 	SupplierInfo  [][]string
 	RawData       struct {

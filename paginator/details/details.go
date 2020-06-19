@@ -29,6 +29,11 @@ func GetDetails(link string, ctx *colly.Context, cookies []*http.Cookie, collect
 		// log.Debug.Println("URL res.Headers=", res.Headers)
 	})
 
+	// conditions state
+	cl.OnHTML("div.tipas-2", func(e *colly.HTMLElement) {
+		(*data).Condition = e.ChildText("")
+	})
+
 	cl.OnHTML("div.auto-specification table", func(e *colly.HTMLElement) {
 		log.Debug.Println("\"div.auto-specification table\" found")
 		table := make([][]string, 0)
