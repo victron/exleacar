@@ -1,0 +1,13 @@
+
+FROM alpine:3.12.0
+WORKDIR /home 
+COPY ./exleacar /usr/local/bin/
+RUN apk --no-cache add ca-certificates && \
+    apk add libc6-compat
+# VOLUME /home/vic/exle /home/exlea 
+
+ENTRYPOINT ["exleacar", "-dir", "/home"]
+CMD [ "-u", "", "-p", "",  "-w", "30", "-vvv"]
+LABEL Name=exleacar Version=2020-06-19
+
+# NOTES: docker run --name exlea -d --rm --net=host -v /host_dir:/home --user $(id -u):$(id -g) victron/exleacar:2020-06-19_3 -u someOne -p secret -w 30 -vvv
