@@ -1,0 +1,35 @@
+---
+- name: Install docker
+  include: install_docker.yaml
+
+- name: install docker API for python
+  pip:
+    name: docker
+
+- name: get uid and gid
+  user:
+    name: "{{ ansible_user }}"
+    state: present
+  register: user_info
+
+- name: create container
+  docker_container:
+    name: exleacar
+    image: victron/exleacar:latest
+    detach: yes
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes: /home/ubuntu/exle:/home
+    user: "{{ user_info.uid }}:{{ user_info.group}}"
+    command: "-u {{ exlea_user }} -p {{ exlea_password }} -w 30 -vvv"
+    state: started
+    # state: present
+    # recreate: yes
+  # become: yes
+  # become_user: "{{ app_user }}"
+  # become_method: sudo
+
+
+        
+
+

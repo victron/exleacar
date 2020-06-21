@@ -1,0 +1,28 @@
+---
+- block:
+  - name: install keys
+    shell:
+      cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# TODO: change focal on $(lsb_release -cs)
+  - name: 
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: install  docker
+    apt:
+      name: "{{ item }}" 
+      state: present
+      update_cache: yes
+    loop:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+
+  - name: add user to docker group
+    user:
+      name: "{{ ansible_user }}"
+      groups: docker
+
+  become: yes

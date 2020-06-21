@@ -1,0 +1,11 @@
+---
+- hosts: ec2-inna
+  vars:
+  # vars_files:
+  #   - vars/main.yml
+  roles:
+# or put in meta into dependencies:
+    - role: exleacar
+      tags:
+        - exleacar
+ 
