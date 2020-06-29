@@ -1,10 +1,12 @@
 package paginator
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/victron/exleacar/paginator/fetch"
@@ -87,6 +89,9 @@ func (car *Car) FetchPhotos(dir string, cookies []*http.Cookie, photoNum int) er
 		fileName := filepath.Join(dir, strconv.Itoa(n)+"_photo")
 
 		if err := fetch.DownloadFile(fileName, photoLink, cookies); err != nil {
+			if strings.HasSuffix(fmt.Sprint(err), "no space left on device") {
+				log.Error.Fatalln(err)
+			}
 			log.Error.Println(err)
 			continue
 		}
