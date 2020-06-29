@@ -99,7 +99,7 @@ func SearchWalker(cookies []*http.Cookie, collector *colly.Collector) {
 					// if custom url takes more photos and even report present
 					var photoNum = 0
 					if strings.HasPrefix(e.Response.Ctx.Get("searchUrl"), CUSTOM_SEARCH_URL) {
-						photoNum = 40
+						photoNum = MAX_PHOTOS_NUMBER
 						log.Info.Println("gettting more photos=", photoNum)
 					}
 

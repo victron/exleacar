@@ -1,10 +1,10 @@
 ---
-- name: Install docker
-  include: install_docker.yaml
-
-- name: install docker API for python
-  pip:
-    name: docker
+#- name: Install docker
+#  include: install_docker.yaml
+#
+#- name: install docker API for python
+#  pip:
+#    name: docker
 
 - name: get uid and gid
   user:
@@ -21,10 +21,11 @@
     network_mode: host
     volumes: /home/ubuntu/exle:/home
     user: "{{ user_info.uid }}:{{ user_info.group}}"
-    command: "-u {{ exlea_user }} -p {{ exlea_password }} -w 30 -vvv"
+    command: "-u {{ exlea_user }} -p {{ exlea_password }} -w 30 -v"
+    recreate: yes
+    pull: yes
     state: started
     # state: present
-    # recreate: yes
   # become: yes
   # become_user: "{{ app_user }}"
   # become_method: sudo

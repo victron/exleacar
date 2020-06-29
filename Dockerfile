@@ -1,6 +1,6 @@
 
 #build stage
-# FROM golang:alpine AS builder
+#FROM golang:alpine AS builder
 FROM victron/exleacar_builder:latest AS builder
 WORKDIR /go/src/exleacar
 COPY . .
